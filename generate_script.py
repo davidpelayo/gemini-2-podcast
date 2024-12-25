@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -128,6 +129,22 @@ def create_podcast_script(content):
     except Exception as e:
         print(f"Error generating content: {str(e)}")
         return None
+    
+def clean_podcast_script(script):
+    # Define a regex pattern to identify the start of the podcast text
+    podcast_start_pattern = r"^(Speaker A:|Speaker B:)"
+    
+    # Split the script into lines
+    lines = script.splitlines()
+    
+    # Find the first line that matches the podcast start pattern
+    for i, line in enumerate(lines):
+        if re.match(podcast_start_pattern, line):
+            # Return the script starting from the first podcast line
+            return '\n'.join(lines[i:])
+    
+    # If no match is found, return the original script
+    return script
 
 def main():
     # Get content from multiple sources
@@ -136,11 +153,13 @@ def main():
     # Generate podcast script
     script = create_podcast_script(content)
     if script:
-        # print("\nGenerated Podcast Script:")
-        # print(script)
+        # Clean the script before saving
+        cleaned_script = clean_podcast_script(script)
         
+        # Save the cleaned script
         with open("podcast_script.txt", "w", encoding='utf-8') as f:
-            f.write(script)
+            f.write(cleaned_script)
+        print("Podcast script saved successfully!")
 
 if __name__ == "__main__":
     main()
