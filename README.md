@@ -71,6 +71,7 @@ VOICE_B=Kore
 ## Required Files
 ```text
 Ensure these files are present in your project directory:
+- audio_processor.py
 - generate_podcast.py
 - generate_script.py
 - generate_audio.py
