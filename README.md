@@ -101,7 +101,6 @@ python generate_podcast.py
 
 ### Wait for Audio Generation to Complete:
 ```text
-- A progress bar will display the status.
 - Final output: final_podcast.wav.
 ```
 
