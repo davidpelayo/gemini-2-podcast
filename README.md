@@ -46,7 +46,7 @@ PortAudio comes with PyAudio wheels
 
 ### Clone the Repository:
 ```bash
-git clone https://github.com/yourusername/gemini-2-podcast.git
+git clone https://github.com/agituts/gemini-2-podcast.git
 cd gemini-2-podcast
 ```
 
