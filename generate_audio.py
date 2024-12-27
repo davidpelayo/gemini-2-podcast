@@ -85,15 +85,20 @@ def prepare_speaker_dialogues(system_instructions, full_script, speaker_lines, v
     return dialogues, output_files
 
 async def process_speaker_concurrent(voice, dialogues, output_files):
-    # Use the split_dialogues function to split into three batches
+    # Split into three batches
     batches, output_batches = split_dialogues(dialogues, output_files)
-
+    
+    # Create generators for each batch
+    generators = [AudioGenerator(voice) for _ in range(len(batches))]
+    
     async with asyncio.TaskGroup() as tg:
-        # Process each batch with its own generator and connection
-        generators = [AudioGenerator(voice) for _ in range(len(batches))]
-
-        for gen, batch, out_batch in zip(generators, batches, output_batches):
-            tg.create_task(gen.process_batch(batch, out_batch))
+        tasks = [tg.create_task(gen.process_batch(batch, out_batch)) 
+                for gen, batch, out_batch in zip(generators, batches, output_batches)]
+    
+    # Ensure all websocket connections are closed
+    for generator in generators:
+        if generator.ws:
+            await generator.ws.close()
 
 def interleave_output_files(speaker_a_files, speaker_b_files):
     """Interleaves the audio files from both speakers to maintain conversation order"""
@@ -128,22 +133,24 @@ async def main():
     with tempfile.TemporaryDirectory(dir=script_dir) as temp_dir:
         system_instructions, full_script, speaker_a_lines, speaker_b_lines = read_and_parse_inputs()
 
+        # Prepare dialogues for both speakers
         dialogues_a, output_files_a = prepare_speaker_dialogues(
             system_instructions, full_script, speaker_a_lines, VOICE_A, temp_dir)
         dialogues_b, output_files_b = prepare_speaker_dialogues(
             system_instructions, full_script, speaker_b_lines, VOICE_B, temp_dir)
 
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(process_speaker_concurrent(
-                VOICE_A, dialogues_a, output_files_a))
-            tg.create_task(process_speaker_concurrent(
-                VOICE_B, dialogues_b, output_files_b))
+        # Process Speaker A first
+        print("Processing Speaker A...")
+        await process_speaker_concurrent(VOICE_A, dialogues_a, output_files_a)
+        
+        # Then process Speaker B
+        print("Processing Speaker B...")
+        await process_speaker_concurrent(VOICE_B, dialogues_b, output_files_b)
 
-        # Use the interleave function to maintain conversation order
-        # Exclude the initial files (output_files_a[1:], output_files_b[1:])
+        # Interleave and combine audio as before
         all_output_files = interleave_output_files(output_files_a[1:], output_files_b[1:])
         final_output = "final_podcast.wav"
-        combine_audio_files(all_output_files, final_output, silence_duration_ms=400)
+        combine_audio_files(all_output_files, final_output, silence_duration_ms=50)
         print(f"\nFinal podcast audio created: {final_output}")
 
     print("Temporary files cleaned up")
