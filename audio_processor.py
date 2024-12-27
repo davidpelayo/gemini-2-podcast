@@ -47,6 +47,13 @@ class AudioGenerator:
 
         self.complete_audio = bytearray()
 
+    async def cleanup(self):
+        if self.ws:
+            await self.ws.close()
+        self.complete_audio.clear()
+        while not self.audio_in_queue.empty():
+            self.audio_in_queue.get_nowait()
+
     async def process_batch(self, dialogues, output_files):
         ws = await connect(self.uri, **self.ws_options)
         async with ws:
