@@ -12,37 +12,6 @@ load_dotenv()
 VOICE_A = os.getenv('VOICE_A', 'Puck')
 VOICE_B = os.getenv('VOICE_B', 'Kore')
 
-def split_dialogues(dialogues, output_files):
-    # Remove the initialization message from the count of dialogues to split
-    dialogue_count = len(dialogues) - 1  # Subtract 1 for init message
-    batch_size = (dialogue_count + 2) // 3  # Ceiling division for remaining dialogues
-
-    # Create batches with proper initialization
-    init_message = dialogues[0]  # Store initialization message
-    remaining_dialogues = dialogues[1:]  # Get all dialogues except init
-    init_output_file = output_files[0]  # Store initialization output file name
-    remaining_output_files = output_files[1:]  # Get remaining output files
-
-    batches = []
-    output_batches = []
-
-    # Split into three batches
-    for i in range(3):
-        start_idx = i * batch_size
-        end_idx = min((i + 1) * batch_size, len(remaining_dialogues))
-
-        if start_idx < len(remaining_dialogues):
-            # Add initialization message as the first element for each batch
-            batch = [init_message] + remaining_dialogues[start_idx:end_idx]
-
-            # Create output batch with proper initial file name
-            out_batch = [init_output_file] + remaining_output_files[start_idx:end_idx]
-
-            batches.append(batch)
-            output_batches.append(out_batch)
-
-    return batches, output_batches
-
 def parse_conversation(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
@@ -84,21 +53,16 @@ def prepare_speaker_dialogues(system_instructions, full_script, speaker_lines, v
 
     return dialogues, output_files
 
-async def process_speaker_concurrent(voice, dialogues, output_files):
-    # Split into three batches
-    batches, output_batches = split_dialogues(dialogues, output_files)
+async def process_speaker(voice, dialogues, output_files):
+    # Create a single generator for all dialogues
+    generator = AudioGenerator(voice)
     
-    # Create generators for each batch
-    generators = [AudioGenerator(voice) for _ in range(len(batches))]
-    
-    async with asyncio.TaskGroup() as tg:
-        tasks = [tg.create_task(gen.process_batch(batch, out_batch)) 
-                for gen, batch, out_batch in zip(generators, batches, output_batches)]
-    
-    # Ensure all websocket connections are closed
-    for generator in generators:
-        if generator.ws:
-            await generator.ws.close()
+    # Process the entire batch of dialogues at once
+    await generator.process_batch(dialogues, output_files)
+
+    # Ensure the websocket connection is closed
+    if generator.ws:
+        await generator.ws.close()
 
 def interleave_output_files(speaker_a_files, speaker_b_files):
     """Interleaves the audio files from both speakers to maintain conversation order"""
@@ -141,11 +105,11 @@ async def main():
 
         # Process Speaker A first
         print("Processing Speaker A...")
-        await process_speaker_concurrent(VOICE_A, dialogues_a, output_files_a)
+        await process_speaker(VOICE_A, dialogues_a, output_files_a)
         
         # Then process Speaker B
         print("Processing Speaker B...")
-        await process_speaker_concurrent(VOICE_B, dialogues_b, output_files_b)
+        await process_speaker(VOICE_B, dialogues_b, output_files_b)
 
         # Interleave and combine audio as before
         all_output_files = interleave_output_files(output_files_a[1:], output_files_b[1:])
