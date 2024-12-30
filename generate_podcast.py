@@ -2,6 +2,7 @@ import subprocess
 import os
 import logging
 import sys
+import argparse
 
 # Custom formatter that only shows the message
 class CustomFormatter(logging.Formatter):
@@ -17,8 +18,29 @@ logger.setLevel(logging.INFO)
 # Remove default handlers
 logging.getLogger().handlers = []
 
-def generate_podcast():
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Generate podcast with language option.")
+    parser.add_argument('--language', default='English', help='Language for audio narration')
+    return parser.parse_args()
+
+def update_language_in_template(language):
+    template_file = 'system_instructions_audio_template.txt'
+    output_file = 'system_instructions_audio.txt'
+    
+    with open(template_file, 'r', encoding='utf-8') as file:
+        content = file.read()
+    
+    updated_content = content.replace('[LANGUAGE]', language)
+    
+    with open(output_file, 'w', encoding='utf-8') as file:
+        file.write(updated_content)
+
+def generate_podcast(language):
     try:
+        # Update language in template file
+        update_language_in_template(language)
+        logger.info(f"Updated template for language: {language}")
+
         # Step 1: Generate script
         logger.info("Generating podcast script...")
         subprocess.run([sys.executable, "generate_script.py"], check=True)
@@ -29,7 +51,7 @@ def generate_podcast():
             logger.info("Process terminated by user.")
             return
 
-        # Step 2: Generate audio
+        # Step 2: Generate audio with updated language file
         logger.info("Converting script to audio...")
         subprocess.run([sys.executable, "generate_audio.py"], check=True)
         
@@ -44,4 +66,5 @@ def generate_podcast():
         logger.error(f"Unexpected error: {str(e)}")
 
 if __name__ == "__main__":
-    generate_podcast()
+    args = parse_arguments()
+    generate_podcast(args.language)
