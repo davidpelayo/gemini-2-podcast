@@ -1,14 +1,13 @@
 
 # gemini-2-podcast Setup Guide
 
-A Python-based tool that generates engaging podcast conversations using Google's Gemini 2.0 Flash Experimental model for script generation and text-to-speech conversion.
-
-[![Gemini 2 Podcast Setup Guide: Transform Content into Pro-Level Podcasts](https://img.youtube.com/vi/9qeiQ4x30Dk/maxresdefault.jpg)](https://youtu.be/9qeiQ4x30Dk)
+A Python-based tool that generates engaging podcast conversations using Google's Gemini 2.0 Flash Experimental model for script generation and text-to-speech conversion. Now with multi-language support for generating podcasts in various languages.
 
 ## Features
 - Converts content from multiple source formats (PDF, URL, TXT, Markdown) into natural conversational scripts.
 - Generates high-quality audio using Google's text-to-speech capabilities.
-- Supports two distinct voices for dynamic conversations.
+- Supports multiple languages for podcast generation.
+- Provides two distinct voices for dynamic conversations.
 - Handles error recovery and retries for robust audio generation.
 - Progress tracking with visual feedback during generation.
 
@@ -48,7 +47,7 @@ PortAudio comes with PyAudio wheels
 
 ### Clone the Repository:
 ```bash
-git clone https://github.com/agituts/gemini-2-podcast.git
+git clone https://github.com/yourusername/gemini-2-podcast.git
 cd gemini-2-podcast
 ```
 
@@ -73,12 +72,10 @@ VOICE_B=Kore
 ## Required Files
 ```text
 Ensure these files are present in your project directory:
-- audio_processor.py
 - generate_podcast.py
 - generate_script.py
 - generate_audio.py
 - system_instructions_script.txt
-- system_instructions_audio_template.txt
 - system_instructions_audio.txt
 - requirements.txt
 - README.md
@@ -87,6 +84,16 @@ Ensure these files are present in your project directory:
 ## Usage Instructions
 
 ### Start the Podcast Generation:
+
+### Multi-Language Support:
+The project supports generating podcasts in multiple languages. Specify the desired language using the `--language` option.
+If no language is specified, it defaults to English.
+
+Example usage:
+```bash
+python generate_podcast.py --language spanish
+```
+
 ```bash
 python generate_podcast.py
 ```
@@ -104,6 +111,7 @@ python generate_podcast.py
 
 ### Wait for Audio Generation to Complete:
 ```text
+- A progress bar will display the status.
 - Final output: final_podcast.wav.
 ```
 
