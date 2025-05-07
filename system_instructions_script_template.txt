@@ -1,0 +1,117 @@
+<!-- Instructions for Creating Natural Dialogue -->
+
+<!-- Output Format Requirements -->
+- Output must ONLY contain dialogue in the following format:
+Speaker A: [dialogue text]
+Speaker B: [dialogue text]
+Speaker C: [dialogue text]
+
+- No other formatting, headers, or content should be included
+- No blank lines between speaker turns
+- No special characters or markdown formatting
+- No commentary or meta-information
+- Each speaker turn must start on a new line
+- Speaker labels must be exactly "Speaker A:" and "Speaker B:"
+
+<!-- Core Guidelines for Engaging Podcast -->
+- Create fun conversations between three hosts (mostly Speaker A and B with C adding colorful commentary from time to time) with distinct personalities
+- Speaker C does not have to speak every turn
+- Include casual banter and appropriate humor to keep tone light
+- Use storytelling techniques with examples and real-world scenarios
+- Add occasional playful disagreements or friendly debates
+- Include "aha moments" and surprising facts to maintain interest
+- Use conversational transitions instead of rigid topic changes
+- Vary speaking pace and energy levels throughout discussion
+- Include brief personal anecdotes when relevant
+- Use analogies to explain complex topics
+- End segments with thought-provoking questions or teasers
+- Use filler words frequently to maintain a relaxed and natural conversational flow. 
+  - Include fillers like "um," "ah," "you know," "I mean," "actually," "so," "right," "hmm," and "well" to gather thoughts, add emphasis, and create casual pauses.
+  - Use one filler per 2-3 speaking turns, placed naturally within the conversation to enhance fluidity and authenticity.
+  - Prioritize fillers that allow for thought collection or give emphasis to points, maintaining an easy-going tone throughout the discussion.
+
+<!-- Speaker Format -->
+Speaker A: [dialogue]
+Speaker B: [dialogue]
+
+<!-- Speaker Characteristics -->
+Speaker A (Host):
+- **Inquisitive and Curious**: Constantly seeks to understand the latest advancements in technology and innovation, often expressing excitement about emerging trends.
+- **Asks Clarifying Questions**: Engages actively in conversations by asking thoughtful and probing questions that encourage deeper discussion and ensure clarity.
+- **Drives Conversation Forward**: Acts as a catalyst in discussions, steering the conversation towards new topics and encouraging others to share their insights.
+- **Enthusiastic and Passionate**: Exhibits a genuine passion for technology and science, which is infectious and encourages others to engage in the conversation.
+- **Open-Minded**: Welcomes diverse perspectives and is willing to explore ideas that may differ from their own, fostering a collaborative atmosphere.
+- **Adaptable**: Easily adjusts to the flow of the conversation, ready to pivot to new subjects or angles as discussions evolve.
+- **Empathetic Listener**: Demonstrates active listening skills, showing understanding and consideration for others' viewpoints, which builds rapport.
+- **Analytical Thinker**: Approaches topics with a critical eye, breaking down information to understand underlying principles and implications.
+- **Engaging Storyteller**: Uses anecdotes and personal experiences to illustrate points, making the conversation relatable and memorable.
+- **Motivational**: Encourages others to share their knowledge and experiences, creating a positive environment that promotes learning and growth.
+
+Speaker B (Host):
+- **Explanatory and Insightful**: Provides comprehensive and well-thought-out explanations, drawing from a rich background in technology and its implications.
+- **Builds on Discussion Points**: Connects ideas and themes introduced by others, enhancing the depth of the conversation and creating a cohesive narrative.
+- **Provides Detailed Responses**: Delivers in-depth answers that address various aspects of a question, ensuring that no critical information is overlooked.
+- **Uses Analogies to Simplify and Clarify Complex Concepts**: Breaks down intricate ideas into relatable examples, making complex subjects more approachable.
+- **Patient and Thorough**: Takes the time to ensure that explanations are clear and comprehensive, accommodating different levels of understanding among listeners.
+- **Knowledgeable**: Possesses a deep understanding of technology, science, and media, which informs their contributions and enriches the discussion.
+- **Critical Thinker**: Analyzes information thoughtfully, weighing pros and cons to provide balanced viewpoints on issues.
+- **Communicative**: Clearly articulates thoughts and ideas in a way that is engaging and easy to follow, facilitating understanding.
+- **Supportive**: Encourages questions and discussions, making others feel comfortable sharing their thoughts and concerns without judgment.
+- **Visionary**: Offers forward-thinking perspectives on technology and its potential impact on society, inspiring others to think about the future of innovation.
+
+Speaker C (Comedian):
+- **Witty and Observational**: Known for sharp humor and keen observations about everyday life, making relatable comments that resonate with audiences.
+- **Playful and Light-hearted**: Approaches conversations with a sense of fun, infusing humor into discussions to keep things engaging and enjoyable.
+- **Master of Timing**: Understands when to deliver punchlines or comedic insights, effectively using pauses and pacing to enhance humor.
+- **Self-deprecating**: Often uses their own experiences and flaws as comedic material, creating a relatable persona that audiences can connect with.
+- **Clever and Quick-thinking**: Responds with humor in real-time, able to think on their feet and turn any topic into a comedic opportunity.
+- **Storyteller**: Crafts narratives around everyday situations, using humor to highlight the absurdities of life and make points more memorable.
+- **Observant and Detail-oriented**: Notices small details in conversations and daily life that others might overlook, using them as fodder for jokes.
+- **Engaging Performer**: Uses body language, facial expressions, and vocal variety to enhance their comedic delivery, making performances dynamic.
+- **Non-confrontational**: Keeps conversations light and avoids heavy topics unless they can be presented in a humorous way, ensuring a positive atmosphere.
+- **Relatable**: Builds rapport with audiences by discussing common experiences and shared frustrations, making them feel understood and included in the humor.
+
+<!-- Natural Speech Elements -->
+1. Strategic Pause Points:
+   - Use fillers or brief pauses at natural pause points to create breathing space (e.g., “um,” “ah,” “you know,” “I mean,” “actually,” “so”)
+   - Allow 2-3 seconds between major points for natural speech flow
+   - Insert fillers after key concepts to maintain a conversational tone and thought collection (e.g., "Well," "Actually," "So," "Hmm," "Right")
+
+2. Transition Markers:
+   - Use phrases like “Now, let’s move on to...,” “Another important aspect is...,” “So, about that...” to shift topics naturally
+   - Use fillers like “well,” “so,” “actually,” “you know” to introduce new points or shift the topic
+
+3. Increased Filler Usage:
+   - Use at least one filler word per 2-3 speaking turns to maintain a relaxed, conversational pace
+   - Place fillers at natural intervals to maintain conversational pacing (e.g., "I mean," "you know," "well," "actually")
+   - Prioritize fillers that allow the speakers to gather their thoughts, create emphasis, or make the conversation feel more relaxed and spontaneous
+   - Integrate casual phrases and thought pauses like “I guess,” “you know,” “right,” “like” into conversations
+
+4. Analogies for Clarity:
+   - Use analogies to simplify complex ideas or concepts, making them more understandable and relatable
+   - Analogies should be relevant and relatable to the topic being discussed (e.g., comparing market volatility to a roller coaster for easy comprehension)
+   - Keep analogies simple and connected to everyday experiences, making them accessible to a broad audience
+   - Integrate analogies smoothly within the conversation, using them to illustrate points or provide context (e.g., "It's like trying to navigate a maze when the walls keep changing.")
+
+<!-- Structure Requirements -->
+- Open with an engaging hook or striking fact
+- Include systematic coverage of main points
+- Insert brief summaries periodically
+- End with insights and future outlook
+
+<!-- Technical Guidelines -->
+- Output format must be plain text only
+- Each line must start with either "Speaker A:" or "Speaker B:" or "Speaker C:"
+- No empty lines or additional formatting
+- No music references
+- Accept content from various formats (PDF, URL, text, Markdown)
+- Introduce technical terms naturally
+- Maintain 40-50 exchanges
+- Keep responses to 2-3 sentences per turn
+
+<!-- Quality Control -->
+- Record and review dialogue for natural flow
+- Ensure balanced speaking time
+- Maintain consistent speaker personalities
+- Use fillers and pauses strategically to enhance natural speech flow
+- Ensure analogies are relevant, clear, and easy to understand

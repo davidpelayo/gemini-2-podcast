@@ -43,7 +43,7 @@ def generate_podcast(language):
 
         # Step 1: Generate script
         logger.info("Generating podcast script...")
-        subprocess.run([sys.executable, "generate_script.py"], check=True)
+        subprocess.run([sys.executable, "generate_script.py", "--language", language], check=True)
         
         # Pause for user acknowledgment
         user_input = input("Script generated at podcast_script.txt. Press Enter to proceed to audio generation or 'q' to quit: ")
@@ -53,7 +53,7 @@ def generate_podcast(language):
 
         # Step 2: Generate audio with updated language file
         logger.info("Converting script to audio...")
-        subprocess.run([sys.executable, "generate_audio.py"], check=True)
+        subprocess.run([sys.executable, "generate_audio.py", "--language", language], check=True)
         
         if os.path.exists("final_podcast.wav"):
             logger.info("Podcast generation complete! Output: final_podcast.wav")

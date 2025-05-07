@@ -77,8 +77,8 @@ Ensure these files are present in your project directory:
 - generate_podcast.py
 - generate_script.py
 - generate_audio.py
-- system_instructions_script.txt
-- system_instructions_audio.txt
+- system_instructions_script_template.txt
+- system_instructions_audio_template.txt
 - requirements.txt
 - README.md
 ```

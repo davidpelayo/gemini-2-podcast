@@ -15,14 +15,53 @@ load_dotenv()
 
 GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
 
+LANGUAGE_CODE_MAP = {
+    "german": "de-DE",
+    "english (australia)": "en-AU",
+    "english (uk)": "en-GB",
+    "english (india)": "en-IN",
+    "english (us)": "en-US",
+    "english": "en-US",
+    "spanish (us)": "es-US",
+    "spanish": "es-ES",
+    "french": "fr-FR",
+    "hindi": "hi-IN",
+    "portuguese": "pt-BR",
+    "arabic": "ar-XA",
+    "spanish (spain)": "es-ES",
+    "french (canada)": "fr-CA",
+    "indonesian": "id-ID",
+    "italian": "it-IT",
+    "japanese": "ja-JP",
+    "turkish": "tr-TR",
+    "vietnamese": "vi-VN",
+    "bengali": "bn-IN",
+    "gujarati": "gu-IN",
+    "kannada": "kn-IN",
+    "malayalam": "ml-IN",
+    "marathi": "mr-IN",
+    "tamil": "ta-IN",
+    "telugu": "te-IN",
+    "dutch": "nl-NL",
+    "korean": "ko-KR",
+    "mandarin": "cmn-CN",
+    "chinese": "cmn-CN",
+    "polish": "pl-PL",
+    "russian": "ru-RU",
+    "thai": "th-TH",
+}
+DEFAULT_LANGUAGE_CODE = "en-US"
+
 if sys.version_info < (3, 11):
     import taskgroup, exceptiongroup
     asyncio.TaskGroup = taskgroup.TaskGroup
     asyncio.ExceptionGroup = exceptiongroup.ExceptionGroup
 
 class AudioGenerator:
-    def __init__(self, voice):
+    def __init__(self, voice, language_name="english"):
         self.voice = voice
+        self.language_code = LANGUAGE_CODE_MAP.get(language_name.lower(), DEFAULT_LANGUAGE_CODE)
+        print(f"AudioGenerator initialized with language: {language_name}, using code: {self.language_code}")
         self.audio_in_queue = asyncio.Queue()
         self.ws = None
         self.ws_semaphore = asyncio.Semaphore(1)
@@ -35,15 +74,15 @@ class AudioGenerator:
 
         # WebSocket configuration
         self.ws_options = {
-            'ping_interval': 20,
-            'ping_timeout': 10,
+            'ping_interval': 10,
+            'ping_timeout': 7,
             'close_timeout': 5
         }
 
         # API configuration
         self.host = 'generativelanguage.googleapis.com'
-        self.model = "gemini-2.0-flash-exp"
-        self.uri = f"wss://{self.host}/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key={GOOGLE_API_KEY}"
+        self.model = "gemini-2.0-flash-live-001"
+        self.uri = f"wss://{self.host}/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key={GOOGLE_API_KEY}"
 
         self.complete_audio = bytearray()
 
@@ -70,6 +109,7 @@ class AudioGenerator:
                     "model": f"models/{self.model}",
                     "generation_config": {
                         "speech_config": {
+                            "language_code": self.language_code,
                             "voice_config": {
                                 "prebuilt_voice_config": {
                                     "voice_name": voice

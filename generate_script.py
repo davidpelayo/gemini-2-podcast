@@ -1,6 +1,7 @@
 import os
 import re
 from dotenv import load_dotenv
+import argparse
 
 load_dotenv()
 
@@ -109,20 +110,20 @@ def get_content_from_sources():
 
 def load_prompt_template():
     try:
-        with open('system_instructions_script.txt', 'r', encoding='utf-8') as file:
+        with open('system_instructions_script_template.txt', 'r', encoding='utf-8') as file:
             return file.read()
     except FileNotFoundError:
-        raise FileNotFoundError("Prompt template file not found in system_instructions_script.txt")
+        raise FileNotFoundError("Prompt template file not found in system_instructions_script_template.txt")
 
-def create_podcast_script(content):
+def create_podcast_script(content, language):
     try:
         # Initialize Gemini
         genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.5-flash-preview-04-17')
 
         # Load prompt template and format with content
         prompt_template = load_prompt_template()
-        prompt = f"{prompt_template}\n\nContent: {content}"
+        prompt = f"{prompt_template}\n\nOutput language: {language}\n\nContent: {content}"
         
         response = model.generate_content(prompt)
         return response.text
@@ -132,7 +133,7 @@ def create_podcast_script(content):
     
 def clean_podcast_script(script):
     # Define a regex pattern to identify the start of the podcast text
-    podcast_start_pattern = r"^(Speaker A:|Speaker B:)"
+    podcast_start_pattern = r"^(Speaker A:|Speaker B:|Speaker C:)"
     
     # Split the script into lines
     lines = script.splitlines()
@@ -146,12 +147,19 @@ def clean_podcast_script(script):
     # If no match is found, return the original script
     return script
 
+def parse_script_args():
+    parser = argparse.ArgumentParser(description="Generate script for podcast.")
+    parser.add_argument('--language', default='English', help='Language for audio narration')
+    return parser.parse_args()
+
 def main():
+    script_args = parse_script_args()
     # Get content from multiple sources
     content = get_content_from_sources()
+    language = script_args.language
     
     # Generate podcast script
-    script = create_podcast_script(content)
+    script = create_podcast_script(content, language)
     if script:
         # Clean the script before saving
         cleaned_script = clean_podcast_script(script)
