@@ -18,6 +18,8 @@ VOICE_C = os.getenv('VOICE_C', 'Charon')
 def parse_audio_args():
     parser = argparse.ArgumentParser(description="Generate audio from script.")
     parser.add_argument('--language', default='English', help='Language for audio narration')
+    parser.add_argument('--input-script', default='podcast_script.txt', help='Path to the input script file')
+    parser.add_argument('--output-podcast', default='final_podcast.wav', help='Path for the output podcast audio file')
     return parser.parse_args()
 
 def parse_conversation(file_path):
@@ -47,10 +49,10 @@ async def setup_environment():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     return script_dir
 
-def read_and_parse_inputs():
+def read_and_parse_inputs(input_script_path):
     system_instructions = read_file_content('system_instructions_audio.txt')
-    full_script = read_file_content('podcast_script.txt')
-    speaker_a_lines, speaker_b_lines, speaker_c_lines = parse_conversation('podcast_script.txt')
+    full_script = read_file_content(input_script_path)
+    speaker_a_lines, speaker_b_lines, speaker_c_lines = parse_conversation(input_script_path)
     return system_instructions, full_script, speaker_a_lines, speaker_b_lines, speaker_c_lines
 
 def prepare_speaker_dialogues(system_instructions, full_script, speaker_lines, voice, temp_dir):
@@ -108,11 +110,13 @@ def combine_audio_files(file_list, output_file, silence_duration_ms=50):
 async def main():
     audio_args = parse_audio_args()
     language = audio_args.language
+    input_script_path = audio_args.input_script
+    output_podcast_path = audio_args.output_podcast
 
     script_dir = await setup_environment()
 
     with tempfile.TemporaryDirectory(dir=script_dir) as temp_dir:
-        system_instructions, full_script, speaker_a_lines, speaker_b_lines, speaker_c_lines = read_and_parse_inputs()
+        system_instructions, full_script, speaker_a_lines, speaker_b_lines, speaker_c_lines = read_and_parse_inputs(input_script_path)
 
         # Prepare dialogues for both speakers
         dialogues_a, output_files_a = prepare_speaker_dialogues(
@@ -136,9 +140,8 @@ async def main():
 
         # Interleave and combine audio as before
         all_output_files = interleave_output_files(output_files_a[1:], output_files_b[1:], output_files_c[1:])
-        final_output = "final_podcast.wav"
-        combine_audio_files(all_output_files, final_output, silence_duration_ms=50)
-        print(f"\nFinal podcast audio created: {final_output}")
+        combine_audio_files(all_output_files, output_podcast_path, silence_duration_ms=50)
+        print(f"\nFinal podcast audio created: {output_podcast_path}")
 
     print("Temporary files cleaned up")
 

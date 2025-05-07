@@ -73,39 +73,20 @@ def read_txt(txt_path):
         print(f"Error reading text file: {str(e)}")
         return ""
 
-def get_content_from_sources():
-    sources = []
+def get_content_from_source(source_type, source_path):
     content = ""
     
-    while True:
-        source_type = input("Enter source type (pdf/url/txt/md) or 'done' to finish: ").lower().strip()
+    if source_type == "pdf":
+        content = read_pdf(source_path)
+    elif source_type == "url":
+        content = read_url(source_path)
+    elif source_type == "md":
+        content = read_md(source_path)
+    elif source_type == "txt":
+        content = read_txt(source_path)
+    else:
+        print(f"Invalid source type: {source_type}. Must be one of: pdf, url, md, txt")
         
-        if source_type == 'done':
-            break
-            
-        if source_type == "pdf":
-            pdf_path = input("Enter PDF file path: ").strip()
-            pdf_content = read_pdf(pdf_path)
-            if pdf_content:
-                content += pdf_content + "\n"
-        elif source_type == "url":
-            url = input("Enter URL: ").strip()
-            url_content = read_url(url)
-            if url_content:
-                content += url_content + "\n"
-        elif source_type == "md":
-            md_path = input("Enter Markdown file path: ").strip()
-            md_content = read_md(md_path)
-            if md_content:
-                content += md_content + "\n"
-        elif source_type == "txt":
-            txt_path = input("Enter text file path: ").strip()
-            txt_content = read_txt(txt_path)
-            if txt_content:
-                content += txt_content + "\n"
-        else:
-            print("Invalid source type. Please try again.")
-            
     return content
 
 def load_prompt_template():
@@ -150,24 +131,32 @@ def clean_podcast_script(script):
 def parse_script_args():
     parser = argparse.ArgumentParser(description="Generate script for podcast.")
     parser.add_argument('--language', default='English', help='Language for audio narration')
+    parser.add_argument('--source-type', required=True, choices=['pdf', 'url', 'txt', 'md'], 
+                        help='Type of content source (pdf, url, txt, md)')
+    parser.add_argument('--source-path', required=True, help='Path or URL to the source content')
+    parser.add_argument('--output-script', default='podcast_script.txt', 
+                        help='Output path for the generated script file')
     return parser.parse_args()
 
 def main():
-    script_args = parse_script_args()
-    # Get content from multiple sources
-    content = get_content_from_sources()
-    language = script_args.language
+    args = parse_script_args()
     
+    # Get content from specified source
+    content = get_content_from_source(args.source_type, args.source_path)
+    if not content:
+        print(f"Error: Could not extract content from {args.source_type} source at {args.source_path}")
+        return
+        
     # Generate podcast script
-    script = create_podcast_script(content, language)
+    script = create_podcast_script(content, args.language)
     if script:
         # Clean the script before saving
         cleaned_script = clean_podcast_script(script)
         
-        # Save the cleaned script
-        with open("podcast_script.txt", "w", encoding='utf-8') as f:
+        # Save the cleaned script to the specified output path
+        with open(args.output_script, "w", encoding='utf-8') as f:
             f.write(cleaned_script)
-        print("Podcast script saved successfully!")
+        print(f"Podcast script saved successfully to {args.output_script}!")
 
 if __name__ == "__main__":
     main()

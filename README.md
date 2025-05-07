@@ -1,4 +1,3 @@
-
 # gemini-2-podcast Setup Guide
 
 A Python-based tool that generates engaging podcast conversations using Google's Gemini 2.0 Flash Experimental model for script generation and text-to-speech conversion. Now with multi-language support for generating podcasts in various languages.
@@ -12,6 +11,7 @@ A Python-based tool that generates engaging podcast conversations using Google's
 - Provides two distinct voices for dynamic conversations.
 - Handles error recovery and retries for robust audio generation.
 - Progress tracking with visual feedback during generation.
+- Non-interactive API for automation and integration.
 
 ## Prerequisites
 
@@ -69,6 +69,7 @@ pip install -r requirements.txt
 GOOGLE_API_KEY=your_google_api_key
 VOICE_A=Puck
 VOICE_B=Kore
+VOICE_C=Charon
 ```
 
 ## Required Files
@@ -85,36 +86,52 @@ Ensure these files are present in your project directory:
 
 ## Usage Instructions
 
-### Start the Podcast Generation:
+### Command-Line API
 
-### Multi-Language Support:
-The project supports generating podcasts in multiple languages. Specify the desired language using the `--language` option.
-If no language is specified, it defaults to English.
-
-Example usage:
-```bash
-python generate_podcast.py --language spanish
-```
+The podcast generator can be used with the following command-line parameters:
 
 ```bash
-python generate_podcast.py
+python generate_podcast.py --source-type <type> --source-path <path> [--language <language>] [--output-script <script_path>] [--output-podcast <podcast_path>]
 ```
 
-1. When prompted, input content sources:
-   ```text
-   - PDF files: pdf
-   - URLs: url
-   - Text files: txt
-   - Markdown files: md
-   ```
-2. Type `done` when finished.
-3. Review the generated script in `podcast_script.txt`.
-4. Press `Enter` to continue with audio generation or `q` to quit.
+**Required Parameters:**
+- `--source-type`: Type of content source (pdf, url, txt, md)
+- `--source-path`: Path or URL to the source content
 
-### Wait for Audio Generation to Complete:
-```text
-- A progress bar will display the status.
-- Final output: final_podcast.wav.
+**Optional Parameters:**
+- `--language`: Language for audio narration (default: English)
+- `--output-script`: Output path for the generated script file (default: podcast_script.txt)
+- `--output-podcast`: Output path for the generated podcast audio file (default: final_podcast.wav)
+
+### Examples:
+
+Generate a podcast from a PDF file:
+```bash
+python generate_podcast.py --source-type pdf --source-path document.pdf
+```
+
+Generate a Spanish podcast from a URL:
+```bash
+python generate_podcast.py --source-type url --source-path https://example.com/article --language Spanish
+```
+
+Generate a podcast with custom output paths:
+```bash
+python generate_podcast.py --source-type txt --source-path content.txt --output-script my_script.txt --output-podcast my_podcast.wav
+```
+
+### Using Individual Scripts
+
+You can also use the individual scripts directly:
+
+**Generate script only:**
+```bash
+python generate_script.py --source-type <type> --source-path <path> --output-script <script_path>
+```
+
+**Generate audio from script:**
+```bash
+python generate_audio.py --input-script <script_path> --output-podcast <podcast_path>
 ```
 
 ## Output Specifications
