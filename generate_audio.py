@@ -1,146 +1,152 @@
 # generate_audio.py
 
-import tempfile
-import asyncio
 import os
-from audio_processor import AudioGenerator
-from dotenv import load_dotenv
-from pydub import AudioSegment
 import argparse
 import re
+from google.cloud import texttospeech
+from dotenv import load_dotenv
 
 load_dotenv()
 
-VOICE_A = os.getenv('VOICE_A', 'Puck')
-VOICE_B = os.getenv('VOICE_B', 'Kore')
-VOICE_C = os.getenv('VOICE_C', 'Charon')
+# Language mapping (moved from audio_processor.py)
+LANGUAGE_CODE_MAP = {
+    "german": "de-DE",
+    "english (australia)": "en-AU",
+    "english (uk)": "en-GB",
+    "english (india)": "en-IN",
+    "english (us)": "en-US",
+    "english": "en-US",
+    "spanish (us)": "es-US",
+    "spanish": "es-ES",
+    "french": "fr-FR",
+    "hindi": "hi-IN",
+    "portuguese": "pt-BR",
+    "arabic": "ar-XA",
+    "spanish (spain)": "es-ES",
+    "french (canada)": "fr-CA",
+    "indonesian": "id-ID",
+    "italian": "it-IT",
+    "japanese": "ja-JP",
+    "turkish": "tr-TR",
+    "vietnamese": "vi-VN",
+    "bengali": "bn-IN",
+    "gujarati": "gu-IN",
+    "kannada": "kn-IN",
+    "malayalam": "ml-IN",
+    "marathi": "mr-IN",
+    "tamil": "ta-IN",
+    "telugu": "te-IN",
+    "dutch": "nl-NL",
+    "korean": "ko-KR",
+    "mandarin": "cmn-CN",
+    "chinese": "cmn-CN",
+    "polish": "pl-PL",
+    "russian": "ru-RU",
+    "thai": "th-TH",
+}
+DEFAULT_LANGUAGE_CODE = "en-US"
+MULTI_SPEAKER_VOICE_NAME = "en-US-Studio-MultiSpeaker" # Using a specific multi-speaker voice
+
+SPEAKER_TAG_MAP = {
+    "Speaker A": "1",
+    "Speaker B": "2",
+    "Speaker C": "3",
+}
 
 def parse_audio_args():
-    parser = argparse.ArgumentParser(description="Generate audio from script.")
-    parser.add_argument('--language', default='English', help='Language for audio narration')
+    parser = argparse.ArgumentParser(description="Generate audio from script using Google Cloud Text-to-Speech.")
+    parser.add_argument('--language', default='English', help='Language for audio narration (e.g., English, Italian, Spanish)')
     return parser.parse_args()
 
-def parse_conversation(file_path):
+def parse_script_for_turns(file_path):
+    """Parses the podcast script and converts it into a list of Turn objects for TTS API."""
+    turns = []
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    lines = content.strip().split('\n')
-    speaker_a_lines = []
-    speaker_b_lines = []
-    speaker_c_lines = []
-    for index, line in enumerate(lines, start=0):
-        if line.strip():
-            if line.startswith("Speaker A:"):
-                speaker_a_lines.append(line.replace("Speaker A:", f"{index}|").strip())
-            elif line.startswith("Speaker B:"):
-                speaker_b_lines.append(line.replace("Speaker B:", f"{index}|").strip())
-            elif line.startswith("Speaker C:"):
-                speaker_c_lines.append(line.replace("Speaker C:", f"{index}|").strip())
+    lines = content.strip().split('\\n')
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
 
-    return speaker_a_lines, speaker_b_lines, speaker_c_lines
-
-def read_file_content(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
-
-async def setup_environment():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    return script_dir
-
-def read_and_parse_inputs():
-    system_instructions = read_file_content('system_instructions_audio.txt')
-    full_script = read_file_content('podcast_script.txt')
-    speaker_a_lines, speaker_b_lines, speaker_c_lines = parse_conversation('podcast_script.txt')
-    return system_instructions, full_script, speaker_a_lines, speaker_b_lines, speaker_c_lines
-
-def prepare_speaker_dialogues(system_instructions, full_script, speaker_lines, voice, temp_dir):
-    dialogues = [system_instructions + "\n\n" + full_script]
-    output_files = [os.path.join(temp_dir, f"speaker_{voice}_initial.wav")]
-
-    for i, line in enumerate(speaker_lines):
-        line_num, line_dialog = get_line_number(line)
-        dialogues.append(line_dialog)
-        output_files.append(os.path.join(temp_dir, f"{line_num}_speaker_{voice}.wav"))
-
-    return dialogues, output_files
-
-def get_line_number(line):
-    match = re.match(r"(\d+)\|(.*)", line)
-    if match:
-        return int(match.group(1)), match.group(2).strip()
-    return None, line
-
-async def process_speaker(voice, dialogues, output_files, language_name="english"):
-    # Create a single generator for all dialogues
-    generator = AudioGenerator(voice, language_name=language_name)
-    
-    # Process the entire batch of dialogues at once
-    await generator.process_batch(dialogues, output_files)
-
-    # Ensure the websocket connection is closed
-    if generator.ws:
-        await generator.ws.close()
+        speaker_tag = None
+        text_content = line
         
-def extract_line_num(filename):
-    match = re.search(r"(\d+)_speaker_.*\.wav", filename)
-    if match:
-        return int(match.group(1))
-    return float('inf')
+        for speaker_prefix, tag in SPEAKER_TAG_MAP.items():
+            if line.startswith(speaker_prefix + ":"):
+                speaker_tag = tag
+                text_content = line.replace(speaker_prefix + ":", "", 1).strip()
+                break
+        
+        if speaker_tag and text_content: # Only add if a speaker is identified and there's text
+            turns.append(texttospeech.MultiSpeakerMarkup.Turn(text=text_content, speaker=speaker_tag))
+        elif text_content: 
+            # Handling lines that are not explicitly attributed to Speaker A, B, or C.
+            # Option 1: Skip them (current behavior if speaker_tag is None)
+            # Option 2: Assign to a default speaker or the last speaker (more complex)
+            # Option 3: Raise an error or log a warning.
+            # For now, these lines will be skipped if no speaker_tag is found.
+            # If all lines *must* have a speaker, the script generation should ensure this.
+            print(f"Warning: Line without recognized speaker prefix skipped: '{line}'")
 
-def interleave_output_files(speaker_a_files, speaker_b_files, speaker_c_files):
-    """Interleaves the audio files from all speakers to maintain conversation order"""
-    all_files = speaker_a_files + speaker_b_files + speaker_c_files
-    all_files.sort(key=extract_line_num)
-    return all_files
 
-def combine_audio_files(file_list, output_file, silence_duration_ms=50):
-    combined = AudioSegment.empty()
-    silence = AudioSegment.silent(duration=silence_duration_ms)
+    return turns
 
-    for file in file_list:
-        audio = AudioSegment.from_wav(file)
-        if audio.channels == 1:
-            audio = audio.set_channels(2)
-        combined += audio + silence
+def synthesize_multi_speaker_speech(turns, language_code, output_filename):
+    """Synthesizes speech from a list of turns using Google Cloud Text-to-Speech."""
+    client = texttospeech.TextToSpeechClient()
 
-    combined.export(output_file, format="wav")
+    multi_speaker_markup = texttospeech.MultiSpeakerMarkup(turns=turns)
+    synthesis_input = texttospeech.SynthesisInput(multi_speaker_markup=multi_speaker_markup)
 
-async def main():
+    voice_params = texttospeech.VoiceSelectionParams(
+        language_code=language_code,
+        name=MULTI_SPEAKER_VOICE_NAME
+    )
+
+    # Output WAV format, matching previous project settings (e.g., 24000 Hz)
+    # The API defaults to 24000 Hz for LINEAR16 if sample_rate_hertz is not specified.
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.LINEAR16 
+    )
+
+    try:
+        response = client.synthesize_speech(
+            request={"input": synthesis_input, "voice": voice_params, "audio_config": audio_config}
+        )
+    except Exception as e:
+        print(f"Error during TTS API call: {e}")
+        print("Please ensure that GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly and points to a valid service account JSON key file with Text-to-Speech API enabled.")
+        raise
+
+    with open(output_filename, "wb") as out:
+        out.write(response.audio_content)
+    print(f"Audio content written to file \"{output_filename}\"")
+
+def main():
     audio_args = parse_audio_args()
-    language = audio_args.language
+    language_name = audio_args.language.lower()
+    language_code = LANGUAGE_CODE_MAP.get(language_name, DEFAULT_LANGUAGE_CODE)
 
-    script_dir = await setup_environment()
+    print(f"Selected language: {language_name}, using BCP-47 code: {language_code}")
 
-    with tempfile.TemporaryDirectory(dir=script_dir) as temp_dir:
-        system_instructions, full_script, speaker_a_lines, speaker_b_lines, speaker_c_lines = read_and_parse_inputs()
+    script_file_path = 'podcast_script.txt'
+    if not os.path.exists(script_file_path):
+        print(f"Error: Script file not found at {script_file_path}")
+        return
 
-        # Prepare dialogues for both speakers
-        dialogues_a, output_files_a = prepare_speaker_dialogues(
-            system_instructions, full_script, speaker_a_lines, VOICE_A, temp_dir)
-        dialogues_b, output_files_b = prepare_speaker_dialogues(
-            system_instructions, full_script, speaker_b_lines, VOICE_B, temp_dir)
-        dialogues_c, output_files_c = prepare_speaker_dialogues(
-            system_instructions, full_script, speaker_c_lines, VOICE_C, temp_dir)
+    turns = parse_script_for_turns(script_file_path)
 
-        # Process Speaker A first
-        print("Processing Speaker A...")
-        await process_speaker(VOICE_A, dialogues_a, output_files_a, language_name=language)
-        
-        # Then process Speaker B
-        print("Processing Speaker B...")
-        await process_speaker(VOICE_B, dialogues_b, output_files_b, language_name=language)
-        
-        # Then process Speaker C
-        print("Processing Speaker C...")
-        await process_speaker(VOICE_C, dialogues_c, output_files_c, language_name=language)
+    if not turns:
+        print("No speaker turns found in the script. Cannot generate audio.")
+        return
 
-        # Interleave and combine audio as before
-        all_output_files = interleave_output_files(output_files_a[1:], output_files_b[1:], output_files_c[1:])
-        final_output = "final_podcast.wav"
-        combine_audio_files(all_output_files, final_output, silence_duration_ms=50)
-        print(f"\nFinal podcast audio created: {final_output}")
-
-    print("Temporary files cleaned up")
+    output_filename = "final_podcast.wav"
+    
+    synthesize_multi_speaker_speech(turns, language_code, output_filename)
+    
+    print("Podcast audio generation complete.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
