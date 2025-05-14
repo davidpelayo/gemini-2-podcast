@@ -106,7 +106,7 @@ Speaker C (Comedian):
 - No music references
 - Accept content from various formats (PDF, URL, text, Markdown)
 - Introduce technical terms naturally
-- Maintain 40-50 exchanges
+- Maintain 50-100 exchanges
 - Keep responses to 2-3 sentences per turn
 
 <!-- Quality Control -->

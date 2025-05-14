@@ -8,7 +8,7 @@ docopt==0.6.2
 google-ai-generativelanguage==0.4.0
 google-api-core==2.24.0
 google-auth==2.37.0
-google-generativeai==0.3.2
+google-genai==1.14.0
 googleapis-common-protos==1.66.0
 grpcio==1.68.1
 grpcio-status==1.62.3
@@ -38,5 +38,5 @@ tzlocal==5.2
 urllib3==2.2.3
 websockets==14.1
 PyQt6>=6.4.0
-taskgroup==0.3.1
+taskgroup==0.2.2
 exceptiongroup==1.2.0

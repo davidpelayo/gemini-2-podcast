@@ -12,6 +12,7 @@ A Python-based tool that generates engaging podcast conversations using Google's
 - Handles error recovery and retries for robust audio generation.
 - Progress tracking with visual feedback during generation.
 - Non-interactive API for automation and integration.
+- Comprehensive logging to both console and log files.
 
 ## Prerequisites
 
@@ -66,7 +67,7 @@ pip install -r requirements.txt
 
 ### Create `.env` File with API Keys:
 ```text
-GOOGLE_API_KEY=your_google_api_key
+GOOGLE_API_KEY=your_google_api_key_here
 VOICE_A=Puck
 VOICE_B=Kore
 VOICE_C=Charon
@@ -91,7 +92,7 @@ Ensure these files are present in your project directory:
 The podcast generator can be used with the following command-line parameters:
 
 ```bash
-python generate_podcast.py --source-type <type> --source-path <path> [--language <language>] [--output-script <script_path>] [--output-podcast <podcast_path>]
+python generate_podcast.py --source-type <type> --source-path <path> [--language <language>] [--output-script <script_path>] [--output-podcast <podcast_path>] [--status-file <status_file_path>]
 ```
 
 **Required Parameters:**
@@ -102,6 +103,7 @@ python generate_podcast.py --source-type <type> --source-path <path> [--language
 - `--language`: Language for audio narration (default: English)
 - `--output-script`: Output path for the generated script file (default: podcast_script.txt)
 - `--output-podcast`: Output path for the generated podcast audio file (default: final_podcast.wav)
+- `--status-file`: Path to a JSON file for tracking script generation status
 
 ### Examples:
 
@@ -126,7 +128,7 @@ You can also use the individual scripts directly:
 
 **Generate script only:**
 ```bash
-python generate_script.py --source-type <type> --source-path <path> --output-script <script_path>
+python generate_script.py --source-type <type> --source-path <path> --output-script <script_path> [--status-file <status_file_path>]
 ```
 
 **Generate audio from script:**
@@ -141,6 +143,22 @@ python generate_audio.py --input-script <script_path> --output-podcast <podcast_
 - Sample rate: 24000Hz
 - Bit depth: 16-bit
 ```
+
+## Logging
+
+The module includes comprehensive logging capabilities:
+
+- All processes log messages to both the console and log files
+- Log files are stored in the `logs` directory within the module folder
+- Each script creates its own timestamped log file (e.g., `generate_script_20230101_120000.log`)
+- Log files include detailed information about the execution process, including:
+  - Script initialization
+  - Content extraction
+  - Script generation steps
+  - Audio generation progress
+  - Errors and warnings
+
+Log files are particularly useful when troubleshooting issues with podcast generation, especially when the module is invoked by other applications.
 
 ## Contributing
 1. Fork the repository.
